@@ -1,15 +1,24 @@
--- рекурсия 
-WITH RECURSIVE r AS (
-    SELECT 
-        1 AS i, 
-        1 AS factorial
-    
-    UNION 
+with recursive _hierarchy as (
+    select
+        a.activityid,
+        a.parentid,
+        a.activitytypeid,
+        at.name as activityname,
+        cast(at.name as varchar) as	path
+    from activitytype as at, activity as a
+    where a.parentid is null 
+    	and at.activitytypeid = a.activitytypeid
 
-    SELECT 
-        i+1 AS i, 
-        factorial * (i+1) as factorial 
-    FROM r
-    WHERE i < 10
+    union
+
+    select
+        a.activityid,
+        a.parentid,
+        a.activitytypeid,
+        at.name as activityname,
+        concat(h.path, ' -> ', a.name) as path
+    from activity as a
+		join activitytype as at on at.activitytypeid = a.activitytypeid
+		join _hierarchy as h on a.parentid = h.activityid
 )
-SELECT * FROM r;
+select * from _hierarchy order by (activityid);
